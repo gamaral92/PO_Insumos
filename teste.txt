@@ -1,7 +1,7 @@
 a // quantidade de insumos
 b // quantidade de máquinas
 v // valor total disponível em dinheiro
-i1 300 m1(300) m3(130)
+i1 300 m1(100) m3(130)
 i2 250 m1(80) m2(120)
 
 ...

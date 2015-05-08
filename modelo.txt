@@ -1,0 +1,18 @@
+1º maximizar os insumos
+2º minimizar o custo
+
+X[i][j] E {0,1} i = 1 .. a
+                j = 1 .. b
+
+Somatorio j .. b X[i][j] <= 1 ,para todo i = 1 .. a
+Somatorio j .. b X[i][j] <= 1 ,para todo i = 1 .. b
+
+C[i][j] = custo de processar o insumo i na máquina j
+
+P[i] = quantidade kg de insumo i
+
+V = total em $$$$
+
+Somatorio i .. a somatorio j .. b p[i] x[i][j] c[i][j] <= V MIN
+
+OBS: somar toda matriz = numero de insumos
