@@ -1,0 +1,9 @@
+a // quantidade de insumos
+b // quantidade de máquinas
+v // valor total disponível em dinheiro
+i1 300 m1(300) m3(130)
+i2 250 m1(80) m2(120)
+
+...
+
+ia 50 m2(180) m3(120) m4(40) m8(200)
