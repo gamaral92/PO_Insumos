@@ -2,13 +2,17 @@ package cplex;
 
 /**
  *
- * @author a11030
+ * @author gabrielamaral
  */
 public class Main {
     
     public static void main(String[] args) {
         Modelo modelo = new Modelo();
-        modelo.modelo();
+        if(modelo.readFile("teste.txt")){
+            modelo.modelo();
+        } else{
+            System.out.println("Erro na leitura do arquivo!");
+        }
     }
     
 }
