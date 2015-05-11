@@ -23,10 +23,12 @@ public class GerarArquivo {
     public static void main(String[] args) {
         Random random = new Random(System.currentTimeMillis());
 
-        int insumos = 20;
-        //int insumos = validaRandom(random.nextInt(20), random, 20);
-        int maquinas = validaRandom(random.nextInt(20), random, 20);
-        int valor = validaRandom(random.nextInt(100000), random, 100000);
+        int insumos = 5000;
+        //int insumos = validaRandom(random.nextInt(10000), random, 10000);
+        int maquinas = 5000;
+        //int maquinas = validaRandom(random.nextInt(10000), random, 10000);
+        //int valor = validaRandom(random.nextInt(100000), random, 100000);
+        int valor = 5_000_000;
 
         try {
             FileWriter fileWriter = new FileWriter(new File("teste.txt"));
@@ -40,7 +42,7 @@ public class GerarArquivo {
             bufferedWriter.newLine();
 
             for (int i = 0; i < insumos; i++) {
-                int peso = validaRandom(random.nextInt(250), random, 250);
+                int peso = validaRandom(random.nextInt(300), random, 300);
                 bufferedWriter.write("i" + (i + 1) + "\t" + peso + gerarCustos(random, maquinas));
                 bufferedWriter.newLine();
             }
@@ -58,7 +60,7 @@ public class GerarArquivo {
         String m = "";
         for (int i = 0; i < quantidadeMaquinasQueProcessam; i++) {
             if (random.nextBoolean()) {
-                m += "\tm" + (i + 1) + "(" + validaRandom(random.nextInt(50), random, 50) + ")";
+                m += "\tm" + (i + 1) + "(" + validaRandom(random.nextInt(100), random, 100) + ")";
             }
         }
         return m;

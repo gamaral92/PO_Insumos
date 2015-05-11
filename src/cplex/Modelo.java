@@ -44,6 +44,7 @@ public class Modelo {
             while (bufferedReader.ready()) {
                 String linha = bufferedReader.readLine();
                 String[] parametros = linha.split("\t");
+                //String[] parametros = linha.replace(" ", "\t").split("\t");
                 pesos[posicao] = Integer.parseInt(parametros[1]);
                 for (int i = 2; i < parametros.length; i++) {
                     String[] param = parametros[i].replace("m", "").replace(")", "").replace("(", " ").split(" ");
@@ -56,7 +57,7 @@ public class Modelo {
             fileReader.close();
             return true;
         } catch (IOException | NumberFormatException ex) {
-            System.out.println("Arquivo " + nomeArquivo + " não encontrado.");
+            System.out.println("Arquivo " + nomeArquivo + " não foi possível ler.");
             return false;
         }
     }
@@ -82,6 +83,7 @@ public class Modelo {
                     try {
                         objective.addTerm(pesos[i] / custo[i][j], itens[i][j]);
                     } catch (ArithmeticException exception) {
+                        //NÃO ADICIONA CUSTO BENEFICIO QUE NAO EXISTE
                     }
                 }
             }
@@ -119,31 +121,7 @@ public class Modelo {
             model.addLe(expr, valor);
 
             if (model.solve()) {
-                System.out.println("Status = " + model.getStatus());
-                System.out.println("Value = " + model.getObjValue());
-                int qtd = 0;
-                for (int i = 0; i < insumos; i++) {
-                    for (int j = 0; j < maquinas; j++) {
-                        qtd += model.getValue(itens[i][j]);
-                    }
-                }
-                System.out.println("Insumos = " + qtd);
-                int gasto = 0;
-                for (int i = 0; i < insumos; i++) {
-                    if (verificarItem(model.getValues(itens[i]))) {
-                        System.out.print("Insumo " + (i + 1) + "\t\t");
-                        for (int j = 0; j < maquinas; j++) {
-                            double value = model.getValue(itens[i][j]);
-                            if(value == 1.0){
-                                gasto += pesos[i] * custo[i][j];
-                            }
-                            System.out.print(Math.abs(model.getValue(itens[i][j])) + "\t");
-                        }
-                        System.out.println("");
-                    }
-                }
-                System.out.println("Valor = " + valor);
-                System.out.println("Gasto = " + gasto);
+                getRelatorio(model, itens);
             } else {
                 System.out.println("A feasible solution may still be present, but IloCplex has not been able to prove its feasibility.");
             }
@@ -152,6 +130,53 @@ public class Modelo {
         }
     }
 
+    /**
+     * Relatorio da solução do CPLEX
+     * @param model
+     * @param itens
+     * @throws IloException 
+     */
+    private void getRelatorio(IloCplex model, IloNumVar[][] itens) throws IloException {
+        System.out.println("-----------------------------------------");
+        int gasto = 0;
+        System.out.print("\t\t");
+        for (int j = 0; j < maquinas; j++) {
+            System.out.print("\tm" + (j+1));
+        }
+        System.out.println("");
+        for (int i = 0; i < insumos; i++) {
+            if (verificarItem(model.getValues(itens[i]))) {
+                System.out.print("Insumo " + (i + 1) + "\t\t");
+                for (int j = 0; j < maquinas; j++) {
+                    double value = model.getValue(itens[i][j]);
+                    if (value == 1.0) {
+                        gasto += pesos[i] * custo[i][j];
+                    }
+                    System.out.print(Math.abs(model.getValue(itens[i][j])) + "\t");
+                }
+                System.out.println("");
+            }
+        }
+        int insumo = 0;
+        for (int i = 0; i < insumos; i++) {
+            for (int j = 0; j < maquinas; j++) {
+                insumo += model.getValue(itens[i][j]);
+            }
+        }
+        System.out.println("CplexStatus = " + model.getCplexStatus());
+        System.out.println("BestObjValue = " + model.getBestObjValue());
+        System.out.println("CplexTime = " + model.getCplexTime());
+        System.out.println("Insumos\t\t=\t" + insumos);
+        System.out.println("Insumos usados\t=\t" + insumo);
+        System.out.println("Valor\t\t=\t" + valor);
+        System.out.println("Gasto\t\t=\t" + gasto);
+    }
+
+    /**
+     *
+     * @param values
+     * @return true se o insumo foi utilizado pelo cplex
+     */
     private boolean verificarItem(double[] values) {
         int soma = 0;
         for (int i = 0; i < values.length; i++) {
