@@ -9,7 +9,7 @@ import java.io.IOException;
 
 /**
  *
- * @author a11030
+ * @author gabrielamaral
  */
 public class Modelo {
 
