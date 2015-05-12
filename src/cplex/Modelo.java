@@ -15,9 +15,9 @@ public class Modelo {
 
     private int insumos;
     private int maquinas;
-    private int valor;
-    private int[] pesos;
-    private int[][] custo;
+    private double valor;
+    private double[] pesos;
+    private double[][] custo;
 
     public boolean readFile(String nomeArquivo) {
         try {
@@ -37,18 +37,20 @@ public class Modelo {
                 this.valor = Integer.parseInt(linha);
             }
 
-            this.pesos = new int[insumos];
-            this.custo = new int[insumos][maquinas];
+            this.pesos = new double[insumos];
+            this.custo = new double[insumos][maquinas];
 
             int posicao = 0;
             while (bufferedReader.ready()) {
                 String linha = bufferedReader.readLine();
                 String[] parametros = linha.split("\t");
                 //String[] parametros = linha.replace(" ", "\t").split("\t");
-                pesos[posicao] = Integer.parseInt(parametros[1]);
+                //pesos[posicao] = Integer.parseInt(parametros[1]);
+                pesos[posicao] = Double.parseDouble(parametros[1]);
                 for (int i = 2; i < parametros.length; i++) {
                     String[] param = parametros[i].replace("m", "").replace(")", "").replace("(", " ").split(" ");
-                    custo[posicao][Integer.parseInt(param[0]) - 1] = Integer.parseInt(param[1]);
+                    //custo[posicao][Integer.parseInt(param[0]) - 1] = Integer.parseInt(param[1]);
+                    custo[posicao][Integer.parseInt(param[0]) - 1] = Double.parseDouble(param[1]);
                 }
                 posicao++;
             }
@@ -80,11 +82,10 @@ public class Modelo {
             IloLinearNumExpr objective = model.linearNumExpr();
             for (int i = 0; i < insumos; i++) {
                 for (int j = 0; j < maquinas; j++) {
-                    try {
+                    if (custo[i][j] != 0.0) {
                         objective.addTerm(pesos[i] / custo[i][j], itens[i][j]);
-                    } catch (ArithmeticException exception) {
-                        //NÃO ADICIONA CUSTO BENEFICIO QUE NAO EXISTE
                     }
+                    //NÃO ADICIONA CUSTO BENEFICIO QUE NAO EXISTE
                 }
             }
             model.addMaximize(objective);
@@ -102,10 +103,10 @@ public class Modelo {
             /**
              * Restrição: soma da coluna <=1
              */
-            for (int i = 0; i < maquinas; i++) {
+            for (int j = 0; j < maquinas; j++) {
                 IloLinearNumExpr expr = model.linearNumExpr();
-                for (int j = 0; j < insumos; j++) {
-                    expr.addTerm(1, itens[j][i]);
+                for (int i = 0; i < insumos; i++) {
+                    expr.addTerm(1, itens[i][j]);
                 }
                 model.addLe(expr, 1);
             }
@@ -115,12 +116,15 @@ public class Modelo {
             IloLinearNumExpr expr = model.linearNumExpr();
             for (int i = 0; i < insumos; i++) {
                 for (int j = 0; j < maquinas; j++) {
-                    expr.addTerm(pesos[i] * custo[i][j], itens[i][j]);
+                    if (custo[i][j] > 0) {
+                        expr.addTerm(pesos[i] * custo[i][j], itens[i][j]);
+                    }
                 }
             }
             model.addLe(expr, valor);
 
             if (model.solve()) {
+                //getRelatorioMatriz(model, itens);
                 getRelatorio(model, itens);
             } else {
                 System.out.println("A feasible solution may still be present, but IloCplex has not been able to prove its feasibility.");
@@ -132,16 +136,17 @@ public class Modelo {
 
     /**
      * Relatorio da solução do CPLEX
+     *
      * @param model
      * @param itens
-     * @throws IloException 
+     * @throws IloException
      */
-    private void getRelatorio(IloCplex model, IloNumVar[][] itens) throws IloException {
+    private void getRelatorioMatriz(IloCplex model, IloNumVar[][] itens) throws IloException {
         System.out.println("-----------------------------------------");
         int gasto = 0;
         System.out.print("\t\t");
         for (int j = 0; j < maquinas; j++) {
-            System.out.print("\tm" + (j+1));
+            System.out.print("\tm" + (j + 1));
         }
         System.out.println("");
         for (int i = 0; i < insumos; i++) {
@@ -166,6 +171,49 @@ public class Modelo {
         System.out.println("CplexStatus = " + model.getCplexStatus());
         System.out.println("BestObjValue = " + model.getBestObjValue());
         System.out.println("CplexTime = " + model.getCplexTime());
+        System.out.println("Insumos\t\t=\t" + insumos);
+        System.out.println("Insumos usados\t=\t" + insumo);
+        System.out.println("Valor\t\t=\t" + valor);
+        System.out.println("Gasto\t\t=\t" + gasto);
+    }
+
+    /**
+     * Relatorio da solução do CPLEX
+     *
+     * @param model
+     * @param itens
+     * @throws IloException
+     */
+    private void getRelatorio(IloCplex model, IloNumVar[][] itens) throws IloException {
+        System.out.println("-----------------------------------------");
+        int gasto = 0;
+        int kg = 0;
+        System.out.println("");
+        for (int i = 0; i < insumos; i++) {
+            if (verificarItem(model.getValues(itens[i]))) {
+                System.out.print("Insumo " + (i + 1) + "\t\t");
+                for (int j = 0; j < maquinas; j++) {
+                    double value = model.getValue(itens[i][j]);
+                    if (value == 1.0) {
+                        gasto += pesos[i] * custo[i][j];
+                        kg += pesos[i];
+                        System.out.print(pesos[i] + "\tm" + (j + 1) + "(" + custo[i][j] + ")");
+                    }
+                }
+                System.out.println("");
+            }
+        }
+        int insumo = 0;
+        for (int i = 0; i < insumos; i++) {
+            for (int j = 0; j < maquinas; j++) {
+                insumo += model.getValue(itens[i][j]);
+            }
+        }
+        System.out.println("---------------------");
+        System.out.println("CplexStatus = " + model.getCplexStatus());
+        System.out.println("BestObjValue = " + model.getBestObjValue());
+        System.out.println("CplexTime = " + model.getCplexTime());
+        System.out.println("kg\t\t=\t" + kg);
         System.out.println("Insumos\t\t=\t" + insumos);
         System.out.println("Insumos usados\t=\t" + insumo);
         System.out.println("Valor\t\t=\t" + valor);

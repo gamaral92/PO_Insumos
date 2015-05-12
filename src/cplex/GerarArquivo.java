@@ -25,10 +25,10 @@ public class GerarArquivo {
 
         int insumos = 5000;
         //int insumos = validaRandom(random.nextInt(10000), random, 10000);
-        int maquinas = 5000;
+        int maquinas = 2000;
         //int maquinas = validaRandom(random.nextInt(10000), random, 10000);
         //int valor = validaRandom(random.nextInt(100000), random, 100000);
-        int valor = 5_000_000;
+        int valor = 2_000_000;
 
         try {
             FileWriter fileWriter = new FileWriter(new File("teste.txt"));
