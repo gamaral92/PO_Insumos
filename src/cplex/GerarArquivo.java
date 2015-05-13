@@ -18,12 +18,12 @@ public class GerarArquivo {
     public static void main(String[] args) {
         Random random = new Random(System.currentTimeMillis());
 
-        int insumos = 5000;
+        int insumos = 3000;
         //int insumos = validaRandom(random.nextInt(10000), random, 10000);
-        int maquinas = 2000;
+        int maquinas = 3000;
         //int maquinas = validaRandom(random.nextInt(10000), random, 10000);
         //int valor = validaRandom(random.nextInt(100000), random, 100000);
-        int valor = 2_000_000;
+        int valor = 900_000;
 
         try {
             FileWriter fileWriter = new FileWriter(new File("teste.txt"));
